@@ -20,6 +20,11 @@ public class Tile {
         this.player = player;
     }
 
+    public Tile(Hive.Tile tile, Hive.Player player){
+        this.tile = tile;
+        this.player = player;
+    }
+
     public Hive.Player getPlayer() {
         return player;
     }

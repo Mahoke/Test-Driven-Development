@@ -6,16 +6,19 @@ import java.util.Objects;
 
 public class Participant {
     List<Tile> availableTiles;
+    List<Tile> tilesOnBoard;
     private Hive.Player color;
 
     public Participant(Hive.Player color){
         this.color = color;
         this.assignStartTilesetToAvailableTiles();
+        this.tilesOnBoard = new ArrayList<>();
     }
 
-    public Participant(Hive.Player color, List<Tile> availableTiles){
+    public Participant(Hive.Player color, List<Tile> availableTiles, List<Tile> tilesOnBoard){
         this.color = color;
         this.availableTiles = availableTiles;
+        this.tilesOnBoard = tilesOnBoard;
     }
 
     private void assignStartTilesetToAvailableTiles() {
@@ -27,6 +30,15 @@ public class Participant {
 
     public List<Tile> getAvailableTiles(){
         return availableTiles;
+    }
+
+
+    public List<Tile> getTilesOnBoard() {
+        return tilesOnBoard;
+    }
+
+    public Hive.Player getColor() {
+        return color;
     }
 
     @Override

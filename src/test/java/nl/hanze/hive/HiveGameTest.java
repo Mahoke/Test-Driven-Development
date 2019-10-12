@@ -52,6 +52,15 @@ public class HiveGameTest {
 
     @Test
     public void whenWhiteQueenBeeSurroundedBlackWinsThenTrue(){
+        Board board = new Board();
+        Participant p = new Participant(Hive.Player.WHITE);
+        //playing the queen bee
+        board.play(new Tile(Hive.Tile.QUEEN_BEE, Hive.Player.WHITE), 0, 0);
 
+        int[][] directions = {{0,-1},{0,1},{1,0},{1,-1},{-1,0},{-1,1}};
+        for (int[] qr : directions){
+            board.play(new Tile(Hive.Tile.BEETLE), qr[0], qr[1] );
+        }
+        assertTrue(board.isQueenBeeSurrounded(p));
     }
 }

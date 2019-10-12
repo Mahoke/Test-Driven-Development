@@ -1,11 +1,12 @@
 package nl.hanze.hive;
 
+
 import java.util.*;
 
 public class Board {
     private Map<Hex, Stack<Tile>> hexTileMap;
 
-    private final int[][] directions = {{0,-1},{0,1},{1,0},{1,-1},{-1,0},{-1,1}};
+    final int[][] directions = {{0,-1},{0,1},{1,0},{1,-1},{-1,0},{-1,1}};
 
     private List<Tile> boardTiles;
 
@@ -48,7 +49,27 @@ public class Board {
         return hexTileMap.get(hex).peek();
     }
 
-    public boolean isQueenBeeParticipantSurrounded(Participant p){
+    public void play(Tile tile, int q, int r){
+        Hex hex = new Hex(q,r);
+        Stack<Tile> tStack = hexTileMap.get(hex);
+        if (tStack == null){
+            tStack = new Stack<>();
+            hexTileMap.put(hex, tStack);
+        }
+        tStack.push(tile);
+    }
 
+    public boolean isQueenBeeSurrounded(Participant p){
+        Tile tempQueenBee = new Tile(p.getColor(), Hive.Tile.QUEEN_BEE);
+
+        int neighbourcount = 0;
+        for (int[] qr : directions){
+            Stack<Tile> st = hexTileMap.get(new Hex(qr[0], qr[1]));
+            System.out.printf(st.toString());
+            if( st != null){
+                neighbourcount += 1;
+            }
+        }
+        return neighbourcount == 6;
     }
 }
