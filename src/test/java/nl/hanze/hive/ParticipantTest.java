@@ -6,19 +6,19 @@ import java.util.List;
 
 import static org.junit.Assert.*;
 
-public class PlayerTest {
+public class ParticipantTest {
 
     //1c
     @Test
     public void creatingNewPlayerWhenTileSetEqualsStartTileSetThenTrue(){
-        Player player = new Player(Hive.Player.BLACK);
+        Participant p = new Participant(Hive.Player.BLACK);
 
         List<Tile> tiles = new ArrayList<>();
         for (Hive.Tile tile: HiveGame.startTileset) {
             tiles.add(new Tile(Hive.Player.BLACK, tile));
         }
 
-        assertEquals(tiles, player.getAvailableTiles());
+        assertEquals(tiles, p.getAvailableTiles());
     }
 
 

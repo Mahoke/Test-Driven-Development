@@ -15,6 +15,18 @@ public class HiveGame implements Hive {
             Hive.Tile.SOLDIER_ANT,
             Hive.Tile.SOLDIER_ANT,
     };
+
+    private boolean whiteIsMoving;
+    private Participant blackParticipant;
+    private Participant whiteParticipant;
+
+    public HiveGame(){
+        this.blackParticipant = new Participant(Hive.Player.BLACK);
+        this.whiteParticipant = new Participant(Hive.Player.WHITE);
+        this.whiteIsMoving = true;
+    }
+
+
     /**
      * Play a new tile.
      *
@@ -25,7 +37,7 @@ public class HiveGame implements Hive {
      */
     @Override
     public void play(Tile tile, int q, int r) throws IllegalMove {
-
+        this.whiteIsMoving = !this.whiteIsMoving;
     }
 
     /**
@@ -39,7 +51,7 @@ public class HiveGame implements Hive {
      */
     @Override
     public void move(int fromQ, int fromR, int toQ, int toR) throws IllegalMove {
-
+        this.whiteIsMoving = !this.whiteIsMoving;
     }
 
     /**
@@ -49,7 +61,7 @@ public class HiveGame implements Hive {
      */
     @Override
     public void pass() throws IllegalMove {
-
+        this.whiteIsMoving = !this.whiteIsMoving;
     }
 
     /**
@@ -71,5 +83,9 @@ public class HiveGame implements Hive {
     @Override
     public boolean isDraw() {
         return false;
+    }
+
+    public Participant getParticipantToMove() {
+        return this.whiteIsMoving ? this.whiteParticipant : this.blackParticipant;
     }
 }

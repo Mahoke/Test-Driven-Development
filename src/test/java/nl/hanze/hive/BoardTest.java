@@ -36,4 +36,18 @@ public class BoardTest {
 
         assertArrayEquals(shouldBeNeighbours.toArray(), returnedNeighbours.toArray());
     }
+
+    //2f
+    @Test
+    public void whenMultipleTilesPlacedOnHexLastInFirstOutThenTrue(){
+        Board board = new Board();
+
+        Tile ta = new Tile(Hive.Player.BLACK, Hive.Tile.SPIDER);
+        Tile tb = new Tile(Hive.Player.WHITE, Hive.Tile.BEETLE);
+
+        board.placeTile(ta, 0, 0);
+        board.placeTile(tb, 0, 0);
+
+        assertEquals(tb, board.getTile(0,0));
+    }
 }
