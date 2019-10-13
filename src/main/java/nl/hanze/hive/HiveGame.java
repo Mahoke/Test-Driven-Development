@@ -1,5 +1,5 @@
 package nl.hanze.hive;
-
+import nl.hanze.hive.Tile;
 public class HiveGame implements Hive {
 
     final static Hive.Tile[] startTileset = {
@@ -19,11 +19,13 @@ public class HiveGame implements Hive {
     private boolean whiteIsMoving;
     private Participant blackParticipant;
     private Participant whiteParticipant;
+    private Board board;
 
     public HiveGame(){
         this.blackParticipant = new Participant(Hive.Player.BLACK);
         this.whiteParticipant = new Participant(Hive.Player.WHITE);
         this.whiteIsMoving = true;
+        this.board = new Board();
     }
 
 
@@ -37,7 +39,16 @@ public class HiveGame implements Hive {
      */
     @Override
     public void play(Tile tile, int q, int r) throws IllegalMove {
-        this.whiteIsMoving = !this.whiteIsMoving;
+        Participant p = (this.whiteIsMoving) ? whiteParticipant : blackParticipant;
+
+        if (this.board.isHexEmpty(q,r) && p.canPlayTile(tile)) {
+            this.board.play(tile, p.getColor(), q, r);
+            p.removeTileFromAvailableTiles(tile);
+            this.whiteIsMoving = !this.whiteIsMoving;
+        } else {
+            throw new IllegalMove();
+        }
+
     }
 
     /**
@@ -72,7 +83,9 @@ public class HiveGame implements Hive {
      */
     @Override
     public boolean isWinner(Player player) {
-        return false;
+        if (this.isDraw()) return false;
+        Player opp = (player == Player.BLACK) ? Player.WHITE : Player.BLACK;
+        return board.isQueenBeeSurrounded(opp);
     }
 
     /**
@@ -82,7 +95,7 @@ public class HiveGame implements Hive {
      */
     @Override
     public boolean isDraw() {
-        return false;
+        return board.isQueenBeeSurrounded(Player.BLACK) && board.isQueenBeeSurrounded(Player.WHITE);
     }
 
     public Participant getParticipantToMove() {

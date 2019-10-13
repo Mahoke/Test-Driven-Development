@@ -52,15 +52,74 @@ public class HiveGameTest {
 
     @Test
     public void whenWhiteQueenBeeSurroundedBlackWinsThenTrue(){
-        Board board = new Board();
-        Participant p = new Participant(Hive.Player.WHITE);
+        HiveGame game = new HiveGame();
+        int QBWq = 0;
+        int QBWr = 0;
         //playing the queen bee
-        board.play(new Tile(Hive.Tile.QUEEN_BEE, Hive.Player.WHITE), 0, 0);
+        try {
+            game.play(Hive.Tile.QUEEN_BEE, 0, 0);
 
-        int[][] directions = {{0,-1},{0,1},{1,0},{1,-1},{-1,0},{-1,1}};
-        for (int[] qr : directions){
-            board.play(new Tile(Hive.Tile.BEETLE), qr[0], qr[1] );
+            int[][] directions = {{0,-1},{0,1},{1,0},{1,-1},{-1,0},{-1,1}};
+            game.play(Hive.Tile.GRASSHOPPER, QBWq + directions[0][0], QBWr + directions[0][1]);
+            game.play(Hive.Tile.GRASSHOPPER, QBWq + directions[1][0], QBWr + directions[1][1]);
+            game.play(Hive.Tile.GRASSHOPPER, QBWq + directions[2][0], QBWr + directions[2][1]);
+            game.play(Hive.Tile.GRASSHOPPER, QBWq + directions[3][0], QBWr + directions[3][1]);
+            game.play(Hive.Tile.GRASSHOPPER, QBWq + directions[4][0], QBWr + directions[4][1]);
+            game.play(Hive.Tile.GRASSHOPPER, QBWq + directions[5][0], QBWq + directions[5][1]);
+
+        } catch (Hive.IllegalMove illegalMove) {
+            //illegalMove.printStackTrace();
         }
-        assertTrue(board.isQueenBeeSurrounded(p));
+        assertTrue(game.isWinner(Hive.Player.BLACK));
+    }
+
+    @Test
+    public void whenBothQueenBeesSurroundedGameDrawThenTrue(){
+        HiveGame game = new HiveGame();
+        //playing the WHITE and BLACK queen bee
+        int QBWq = 0;
+        int QBWr = 0;
+        int QBBq = 0;
+        int QBBr = -3;
+
+        try {
+            game.play(Hive.Tile.QUEEN_BEE, QBWq, QBWr);
+            game.play(Hive.Tile.QUEEN_BEE, QBBq, QBBr);
+
+            int[][] directions = {{0,-1},{0,1},{1,0},{1,-1},{-1,0},{-1,1}};
+
+            game.play(Hive.Tile.GRASSHOPPER, QBWq + directions[0][0], QBWr + directions[0][1]);
+            game.play(Hive.Tile.GRASSHOPPER, QBWq + directions[1][0], QBWr + directions[1][1]);
+            game.play(Hive.Tile.GRASSHOPPER, QBWq + directions[2][0], QBWr + directions[2][1]);
+            game.play(Hive.Tile.GRASSHOPPER, QBBq + directions[0][0], QBBr + directions[0][1]);
+            game.play(Hive.Tile.GRASSHOPPER, QBBq + directions[1][0], QBBr + directions[1][1]);
+            game.play(Hive.Tile.GRASSHOPPER, QBBq + directions[2][0], QBBr + directions[2][1]);
+            game.play(Hive.Tile.SOLDIER_ANT, QBWq + directions[3][0], QBWr + directions[3][1]);
+            game.play(Hive.Tile.SOLDIER_ANT, QBWq + directions[4][0], QBWr + directions[4][1]);
+            game.play(Hive.Tile.SOLDIER_ANT, QBWq + directions[5][0], QBWr + directions[5][1]);
+            game.play(Hive.Tile.SOLDIER_ANT, QBBq + directions[3][0], QBBr + directions[3][1]);
+            game.play(Hive.Tile.SOLDIER_ANT, QBBq + directions[4][0], QBBr + directions[4][1]);
+            game.play(Hive.Tile.SOLDIER_ANT, QBBq + directions[5][0], QBBr + directions[5][1]);
+
+
+        } catch (Hive.IllegalMove illegalMove) {
+            illegalMove.printStackTrace();
+        }
+        assertTrue(game.isDraw());
+    }
+
+    @Test
+    public void whenPlayerPlaysUnavailableStoneThenFalse(){
+        HiveGame game = new HiveGame();
+        boolean playableState = true;
+        for (int i = 0; i < 5; i++) {
+            //each player has 4 spiders, so in 5th iteration, a illegalmove will be thrown.
+            try {
+                game.play(Hive.Tile.SPIDER, 0, 0);
+            } catch (Hive.IllegalMove illegalMove) {
+                playableState = false;
+            }
+        }
+        assertFalse(playableState);
     }
 }

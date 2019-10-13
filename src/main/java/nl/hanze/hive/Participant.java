@@ -15,17 +15,22 @@ public class Participant {
         this.tilesOnBoard = new ArrayList<>();
     }
 
-    public Participant(Hive.Player color, List<Tile> availableTiles, List<Tile> tilesOnBoard){
-        this.color = color;
-        this.availableTiles = availableTiles;
-        this.tilesOnBoard = tilesOnBoard;
-    }
-
     private void assignStartTilesetToAvailableTiles() {
         this.availableTiles = new ArrayList<Tile>();
         for (Hive.Tile t : HiveGame.startTileset ){
             availableTiles.add(new Tile(this.color, t));
         }
+    }
+
+    public boolean canPlayTile(Hive.Tile tile){
+        Tile t = new Tile(this.color, tile);
+        return availableTiles.contains(t);
+    }
+
+    public void removeTileFromAvailableTiles(Hive.Tile tile){
+        Tile t = new Tile(this.color, tile);
+        this.availableTiles.remove(t);
+        this.tilesOnBoard.add(t);
     }
 
     public List<Tile> getAvailableTiles(){
