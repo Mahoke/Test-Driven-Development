@@ -8,8 +8,10 @@ public class Board {
     private Map<Hex, Stack<Tile>> hexTileMap;
 
     final int[][] directions = {{0,-1},{0,1},{1,0},{1,-1},{-1,0},{-1,1}};
-
+    private int tileCount = 0;
     private List<Tile> boardTiles;
+    private int tileCountWhite;
+    private int tileCountBlack;
 
     public Board(){
         this.boardTiles = new ArrayList<>();
@@ -21,13 +23,12 @@ public class Board {
     }
 
     public List<Hex> getNeighbours(Hex hex){
-
-        int q = hex.getQ();
-        int r = hex.getR();
-        List<Hex> neighbours = new ArrayList<>();
+            List<Hex> neighbours = new ArrayList<>();
 
         for (int[] qr : directions){
-            neighbours.add(new Hex(qr[0], qr[1]));
+            int q = hex.getQ() + qr[0];
+            int r = hex.getR() + qr[1];
+            neighbours.add(new Hex(q,r));
         }
         return neighbours;
     }
@@ -57,7 +58,10 @@ public class Board {
 
     public Tile getTile(int q, int r) {
         Hex hex = new Hex(q,r);
-        return hexTileMap.get(hex).peek();
+        Stack<Tile> st = this.hexTileMap.get(hex);
+        if (st == null) return null;
+
+        return st.peek();
     }
 
     public void play(Hive.Tile tile, Hive.Player player, int q , int r){
@@ -68,6 +72,11 @@ public class Board {
             hexTileMap.put(hex, tStack);
         }
         tStack.push(new Tile(player, tile));
+        this.tileCount++;
+    }
+
+    public void move(Participant p, int fromQ, int fromR, int toQ, int toR) {
+
     }
 
     public boolean isQueenBeeSurrounded(Hive.Player p){
@@ -95,4 +104,79 @@ public class Board {
         }
         return neighbourcount == 6;
     }
+
+    public boolean canPlayTile(Hive.Player color, Hive.Tile tile, int q, int r) {
+        if (!this.isHexEmpty(q, r)) {
+            return false;
+        }
+
+        if (this.tileCount == 0) {
+            return true;
+        }
+
+        boolean hasNeighbours = this.hasTilesInNeighbouringHex(q, r);
+
+        if (!hasNeighbours) {
+            return false;
+        }
+
+        if (this.tileCountWhite > 0 && this.tileCountBlack > 0) {
+            //There are tiles of both players on the board
+            //Tile has to be played next to it's own color tile
+            List<Hex> hexList = this.getNeighbours(new Hex(q, r));
+
+            for (Hex h : hexList) {
+                Stack<Tile> st = hexTileMap.get(h);
+                if (st != null) {
+                    if (st.size() > 0) {
+                        Tile t = st.peek();
+                        Hive.Player neighbourColor = t.getPlayer();
+
+                        if (neighbourColor != color) {
+                            return false;
+                        }
+                    }
+                }
+            }
+
+        }
+
+        return true;
+    }
+
+
+    private boolean hasTilesInNeighbouringHex(int q, int r) {
+        Hex hex = new Hex(q, r);
+        List<Hex> neighboutList = getNeighbours(hex);
+
+        int neighbourcount = 0;
+
+        for(Hex h : neighboutList){
+            Stack<Tile> st = hexTileMap.get(h);
+            if (st != null){
+                if ( st.size() > 0 ) {
+                    neighbourcount++;
+                }
+            }
+        }
+
+        return neighbourcount > 0;
+    }
+
+    public void updateTileCount(Participant p) {
+        if (p.getColor() == Hive.Player.WHITE) {
+            this.tileCountWhite += 1;
+        } else {
+            this.tileCountBlack += 1;
+        }
+    }
+
+    public int getTileCount(Hive.Player c){
+        if ( c == Hive.Player.WHITE ){
+            return this.tileCountWhite;
+        } else {
+            return this.tileCountBlack;
+        }
+    }
+
 }

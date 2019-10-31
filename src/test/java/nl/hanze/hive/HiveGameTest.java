@@ -122,4 +122,127 @@ public class HiveGameTest {
         }
         assertFalse(playableState);
     }
+
+    @Test
+    public void whenStonesOnBoardPlayStoneAtHexWithNoNeighboursThenFalse(){
+        HiveGame game = new HiveGame();
+
+        Tile t1 = new Tile(Hive.Player.BLACK, Hive.Tile.QUEEN_BEE);
+        Tile t2 = new Tile(Hive.Player.WHITE, Hive.Tile.QUEEN_BEE);
+
+        boolean playableState = true;
+
+        try {
+            game.play(Hive.Tile.QUEEN_BEE, -1, 0);
+        } catch (Hive.IllegalMove illegalMove) {
+            playableState = false;
+        }
+
+        try {
+            game.play(Hive.Tile.QUEEN_BEE, 1, 0);
+        } catch (Hive.IllegalMove illegalMove) {
+            playableState = false;
+        }
+
+        assertFalse(playableState);
+    }
+
+    @Test
+    public void whenStonesOfBothOnBoardPlayStoneNextToOpponentThenFalse(){
+        HiveGame game = new HiveGame();
+
+        Tile t1 = new Tile(Hive.Player.BLACK, Hive.Tile.QUEEN_BEE);
+        Tile t2 = new Tile(Hive.Player.WHITE, Hive.Tile.QUEEN_BEE);
+
+        boolean playableState = true;
+
+        try {
+            game.play(Hive.Tile.QUEEN_BEE, 0, 0);
+            game.play(Hive.Tile.QUEEN_BEE, 1, 0);
+        } catch (Hive.IllegalMove illegalMove) {
+            playableState = false;
+        }
+
+        try {
+            game.play(Hive.Tile.SOLDIER_ANT, 0, 1);
+        } catch (Hive.IllegalMove illegalMove) {
+            playableState = false;
+        }
+
+        assertFalse(playableState);
+    }
+
+    @Test
+    public void whenPlayerPlayedThreeTilesHasToPlayQueenThenTrue() {
+        HiveGame game = new HiveGame();
+
+
+        boolean playableState = true;
+
+        try {
+            game.play(Hive.Tile.SOLDIER_ANT, 0, 0);
+            game.play(Hive.Tile.SOLDIER_ANT, 1, 0);
+            game.play(Hive.Tile.SOLDIER_ANT, -1, 0);
+            game.play(Hive.Tile.SOLDIER_ANT, 2, 0);
+            game.play(Hive.Tile.SOLDIER_ANT, -2, 0);
+            game.play(Hive.Tile.SOLDIER_ANT, 3, 0);
+        } catch (Hive.IllegalMove illegalMove) {
+            playableState = false;
+        }
+
+        try {
+            game.play(Hive.Tile.QUEEN_BEE, -3, 0);
+        } catch (Hive.IllegalMove illegalMove) {
+            playableState = false;
+        }
+
+        assertTrue(playableState);
+    }
+
+    @Test
+    public void playerCanOnlyMoveTilesOnBoard(){
+        HiveGame game = new HiveGame();
+        boolean illegalState = false;
+
+        try {
+            game.move(0, 0, -1, 0);
+        } catch (Hive.IllegalMove illegalMove) {
+            illegalState = true;
+        }
+
+        assertTrue(illegalState);
+    }
+
+    @Test
+    public void playerCanOnlyMoveTheirOwnTilesOnBoard(){
+        HiveGame game = new HiveGame();
+        boolean illegalState = false;
+
+        try {
+            game.play(Hive.Tile.QUEEN_BEE, 0,0);
+            game.play(Hive.Tile.QUEEN_BEE, -1, 0);
+            game.move(0, 0, 0, -1);
+        } catch (Hive.IllegalMove illegalMove) {
+            System.out.println(illegalMove);
+            illegalState = true;
+        }
+
+        assertFalse(illegalState);
+    }
+
+    @Test
+    public void playerCanOnlyMoveWhenTheirQueenBeeIsOnBoard(){
+        HiveGame game = new HiveGame();
+        boolean illegalState = false;
+
+        try {
+            game.play(Hive.Tile.GRASSHOPPER, 0, 0);
+            game.play(Hive.Tile.GRASSHOPPER, -1, 0);
+            game.move(0,0,0,-1);
+        } catch (Hive.IllegalMove illegalMove) {
+            illegalState = true;
+        }
+
+        assertTrue(illegalState);
+    }
 }

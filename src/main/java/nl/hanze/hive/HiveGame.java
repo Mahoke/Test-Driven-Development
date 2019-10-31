@@ -41,9 +41,16 @@ public class HiveGame implements Hive {
     public void play(Tile tile, int q, int r) throws IllegalMove {
         Participant p = (this.whiteIsMoving) ? whiteParticipant : blackParticipant;
 
-        if (this.board.isHexEmpty(q,r) && p.canPlayTile(tile)) {
+        if(this.board.getTileCount(p.getColor()) == 3 && tile != Tile.QUEEN_BEE && p.getAvailableTiles().contains(new nl.hanze.hive.Tile(p.getColor(), Tile.QUEEN_BEE) ) ){
+            throw new IllegalMove();
+        }
+
+        if (p.canPlayTile(tile) && this.board.canPlayTile(p.getColor(), tile, q, r)) {
             this.board.play(tile, p.getColor(), q, r);
             p.removeTileFromAvailableTiles(tile);
+
+            this.board.updateTileCount(p);
+
             this.whiteIsMoving = !this.whiteIsMoving;
         } else {
             throw new IllegalMove();
@@ -62,6 +69,18 @@ public class HiveGame implements Hive {
      */
     @Override
     public void move(int fromQ, int fromR, int toQ, int toR) throws IllegalMove {
+        Participant p = (this.whiteIsMoving) ? whiteParticipant : blackParticipant;
+
+        if (this.board.getTileCount(p.getColor()) == 0) throw new IllegalMove("No tiles on board");
+
+        if (!p.getTilesOnBoard().contains(new nl.hanze.hive.Tile(p.getColor(), Tile.QUEEN_BEE))) throw new IllegalMove("Can't move without the QueenBee on board.");
+
+        nl.hanze.hive.Tile tile = this.board.getTile(fromQ, fromR);
+        if (tile == null) throw new IllegalMove("Can't move nothign!");
+
+        if (tile.getPlayer() != p.getColor()) throw new IllegalMove("Moving someone else's tile");
+
+        this.board.move(p, fromQ, fromR, toQ, toR);
         this.whiteIsMoving = !this.whiteIsMoving;
     }
 
