@@ -70,18 +70,29 @@ public class HiveGame implements Hive {
     @Override
     public void move(int fromQ, int fromR, int toQ, int toR) throws IllegalMove {
         Participant p = (this.whiteIsMoving) ? whiteParticipant : blackParticipant;
+        checkLegalMove(fromQ, fromR, toQ, toR, p);
+
+
+        this.board.move(p, fromQ, fromR, toQ, toR);
+        this.whiteIsMoving = !this.whiteIsMoving;
+    }
+
+    private void checkLegalMove(int fromQ, int fromR, int toQ, int toR, Participant p) throws IllegalMove {
 
         if (this.board.getTileCount(p.getColor()) == 0) throw new IllegalMove("No tiles on board");
 
         if (!p.getTilesOnBoard().contains(new nl.hanze.hive.Tile(p.getColor(), Tile.QUEEN_BEE))) throw new IllegalMove("Can't move without the QueenBee on board.");
 
         nl.hanze.hive.Tile tile = this.board.getTile(fromQ, fromR);
-        if (tile == null) throw new IllegalMove("Can't move nothign!");
+        if (tile == null) throw new IllegalMove("Can't move nothing!");
 
         if (tile.getPlayer() != p.getColor()) throw new IllegalMove("Moving someone else's tile");
 
-        this.board.move(p, fromQ, fromR, toQ, toR);
-        this.whiteIsMoving = !this.whiteIsMoving;
+        if ( !board.hasLocationNeighbouringTilesAfterMoving(toQ,toR,fromQ,fromR) ) throw new IllegalMove("Can't move to a location without having neighbours there");
+
+        if ( !board.legalBoardAfterMoving(fromQ, fromR, toQ, toR) ) throw new IllegalMove("Board is not intact after this move");
+
+
     }
 
     /**

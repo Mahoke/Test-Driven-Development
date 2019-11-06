@@ -25,87 +25,54 @@ public class HiveGameTest {
     }
 
     @Test
-    public void afterWhiteParticipantMovesTileParticipantToMoveEqualsBlackThenTrue(){
-        HiveGame g = new HiveGame();
-
-        try {
-            g.move(0,0,1,1);
-        } catch (Hive.IllegalMove illegalMove) {
-            illegalMove.printStackTrace();
-        }
-
-        assertEquals(new Participant(Hive.Player.BLACK), g.getParticipantToMove());
-    }
-
-    @Test
-    public void afterWhiteParticipantPassesParticipantToMoveEqualsBlackThenTrue(){
-        HiveGame g = new HiveGame();
-
-        try {
-            g.pass();
-        } catch (Hive.IllegalMove illegalMove) {
-            illegalMove.printStackTrace();
-        }
-
-        assertEquals(new Participant(Hive.Player.BLACK), g.getParticipantToMove());
-    }
-
-    @Test
     public void whenWhiteQueenBeeSurroundedBlackWinsThenTrue(){
-        HiveGame game = new HiveGame();
+
+        Board board = new Board();
         int QBWq = 0;
         int QBWr = 0;
         //playing the queen bee
-        try {
-            game.play(Hive.Tile.QUEEN_BEE, 0, 0);
+        board.play(Hive.Tile.QUEEN_BEE, Hive.Player.WHITE, 0, 0);
 
-            int[][] directions = {{0,-1},{0,1},{1,0},{1,-1},{-1,0},{-1,1}};
-            game.play(Hive.Tile.GRASSHOPPER, QBWq + directions[0][0], QBWr + directions[0][1]);
-            game.play(Hive.Tile.GRASSHOPPER, QBWq + directions[1][0], QBWr + directions[1][1]);
-            game.play(Hive.Tile.GRASSHOPPER, QBWq + directions[2][0], QBWr + directions[2][1]);
-            game.play(Hive.Tile.GRASSHOPPER, QBWq + directions[3][0], QBWr + directions[3][1]);
-            game.play(Hive.Tile.GRASSHOPPER, QBWq + directions[4][0], QBWr + directions[4][1]);
-            game.play(Hive.Tile.GRASSHOPPER, QBWq + directions[5][0], QBWq + directions[5][1]);
+        int[][] directions = {{0,-1},{0,1},{1,0},{1,-1},{-1,0},{-1,1}};
 
-        } catch (Hive.IllegalMove illegalMove) {
-            //illegalMove.printStackTrace();
-        }
-        assertTrue(game.isWinner(Hive.Player.BLACK));
-    }
+        board.play(Hive.Tile.GRASSHOPPER, Hive.Player.BLACK,QBWq + directions[0][0], QBWr + directions[0][1]);
+        board.play(Hive.Tile.GRASSHOPPER, Hive.Player.WHITE,QBWq + directions[1][0], QBWr + directions[1][1]);
+        board.play(Hive.Tile.GRASSHOPPER, Hive.Player.BLACK,QBWq + directions[2][0], QBWr + directions[2][1]);
+        board.play(Hive.Tile.GRASSHOPPER, Hive.Player.WHITE,QBWq + directions[3][0], QBWr + directions[3][1]);
+        board.play(Hive.Tile.GRASSHOPPER, Hive.Player.BLACK,QBWq + directions[4][0], QBWr + directions[4][1]);
+        board.play(Hive.Tile.GRASSHOPPER, Hive.Player.WHITE,QBWq + directions[5][0], QBWq + directions[5][1]);
+        assertTrue(board.isQueenBeeSurrounded(Hive.Player.WHITE));
+}
 
     @Test
     public void whenBothQueenBeesSurroundedGameDrawThenTrue(){
-        HiveGame game = new HiveGame();
+        Board board = new Board();
+
         //playing the WHITE and BLACK queen bee
         int QBWq = 0;
         int QBWr = 0;
         int QBBq = 0;
         int QBBr = -3;
 
-        try {
-            game.play(Hive.Tile.QUEEN_BEE, QBWq, QBWr);
-            game.play(Hive.Tile.QUEEN_BEE, QBBq, QBBr);
+        board.play(Hive.Tile.QUEEN_BEE,Hive.Player.WHITE, QBWq, QBWr);
+        board.play(Hive.Tile.QUEEN_BEE,Hive.Player.BLACK, QBBq, QBBr);
 
-            int[][] directions = {{0,-1},{0,1},{1,0},{1,-1},{-1,0},{-1,1}};
+        int[][] directions = {{0,-1},{0,1},{1,0},{1,-1},{-1,0},{-1,1}};
 
-            game.play(Hive.Tile.GRASSHOPPER, QBWq + directions[0][0], QBWr + directions[0][1]);
-            game.play(Hive.Tile.GRASSHOPPER, QBWq + directions[1][0], QBWr + directions[1][1]);
-            game.play(Hive.Tile.GRASSHOPPER, QBWq + directions[2][0], QBWr + directions[2][1]);
-            game.play(Hive.Tile.GRASSHOPPER, QBBq + directions[0][0], QBBr + directions[0][1]);
-            game.play(Hive.Tile.GRASSHOPPER, QBBq + directions[1][0], QBBr + directions[1][1]);
-            game.play(Hive.Tile.GRASSHOPPER, QBBq + directions[2][0], QBBr + directions[2][1]);
-            game.play(Hive.Tile.SOLDIER_ANT, QBWq + directions[3][0], QBWr + directions[3][1]);
-            game.play(Hive.Tile.SOLDIER_ANT, QBWq + directions[4][0], QBWr + directions[4][1]);
-            game.play(Hive.Tile.SOLDIER_ANT, QBWq + directions[5][0], QBWr + directions[5][1]);
-            game.play(Hive.Tile.SOLDIER_ANT, QBBq + directions[3][0], QBBr + directions[3][1]);
-            game.play(Hive.Tile.SOLDIER_ANT, QBBq + directions[4][0], QBBr + directions[4][1]);
-            game.play(Hive.Tile.SOLDIER_ANT, QBBq + directions[5][0], QBBr + directions[5][1]);
+        board.play(Hive.Tile.GRASSHOPPER, Hive.Player.BLACK, QBWq + directions[0][0], QBWr + directions[0][1]);
+        board.play(Hive.Tile.GRASSHOPPER, Hive.Player.WHITE, QBWq + directions[1][0], QBWr + directions[1][1]);
+        board.play(Hive.Tile.GRASSHOPPER, Hive.Player.BLACK, QBWq + directions[2][0], QBWr + directions[2][1]);
+        board.play(Hive.Tile.GRASSHOPPER, Hive.Player.WHITE, QBBq + directions[0][0], QBBr + directions[0][1]);
+        board.play(Hive.Tile.GRASSHOPPER, Hive.Player.BLACK, QBBq + directions[1][0], QBBr + directions[1][1]);
+        board.play(Hive.Tile.GRASSHOPPER, Hive.Player.WHITE, QBBq + directions[2][0], QBBr + directions[2][1]);
+        board.play(Hive.Tile.SOLDIER_ANT, Hive.Player.BLACK, QBWq + directions[3][0], QBWr + directions[3][1]);
+        board.play(Hive.Tile.SOLDIER_ANT, Hive.Player.WHITE, QBWq + directions[4][0], QBWr + directions[4][1]);
+        board.play(Hive.Tile.SOLDIER_ANT, Hive.Player.BLACK, QBWq + directions[5][0], QBWr + directions[5][1]);
+        board.play(Hive.Tile.SOLDIER_ANT, Hive.Player.WHITE, QBBq + directions[3][0], QBBr + directions[3][1]);
+        board.play(Hive.Tile.SOLDIER_ANT, Hive.Player.BLACK, QBBq + directions[4][0], QBBr + directions[4][1]);
+        board.play(Hive.Tile.SOLDIER_ANT, Hive.Player.WHITE, QBBq + directions[5][0], QBBr + directions[5][1]);
 
-
-        } catch (Hive.IllegalMove illegalMove) {
-            illegalMove.printStackTrace();
-        }
-        assertTrue(game.isDraw());
+        assertTrue(board.isQueenBeeSurrounded(Hive.Player.BLACK) && board.isQueenBeeSurrounded(Hive.Player.WHITE));
     }
 
     @Test
@@ -123,6 +90,7 @@ public class HiveGameTest {
         assertFalse(playableState);
     }
 
+    //4C
     @Test
     public void whenStonesOnBoardPlayStoneAtHexWithNoNeighboursThenFalse(){
         HiveGame game = new HiveGame();
@@ -147,6 +115,7 @@ public class HiveGameTest {
         assertFalse(playableState);
     }
 
+    //4D
     @Test
     public void whenStonesOfBothOnBoardPlayStoneNextToOpponentThenFalse(){
         HiveGame game = new HiveGame();
@@ -172,6 +141,8 @@ public class HiveGameTest {
         assertFalse(playableState);
     }
 
+
+    //4E
     @Test
     public void whenPlayerPlayedThreeTilesHasToPlayQueenThenTrue() {
         HiveGame game = new HiveGame();
@@ -199,50 +170,74 @@ public class HiveGameTest {
         assertTrue(playableState);
     }
 
-    @Test
-    public void playerCanOnlyMoveTilesOnBoard(){
-        HiveGame game = new HiveGame();
-        boolean illegalState = false;
-
-        try {
-            game.move(0, 0, -1, 0);
-        } catch (Hive.IllegalMove illegalMove) {
-            illegalState = true;
-        }
-
-        assertTrue(illegalState);
-    }
-
+    //5A
     @Test
     public void playerCanOnlyMoveTheirOwnTilesOnBoard(){
         HiveGame game = new HiveGame();
         boolean illegalState = false;
 
         try {
-            game.play(Hive.Tile.QUEEN_BEE, 0,0);
-            game.play(Hive.Tile.QUEEN_BEE, -1, 0);
-            game.move(0, 0, 0, -1);
+            game.play(Hive.Tile.QUEEN_BEE, 0,0);//white
+            game.play(Hive.Tile.SOLDIER_ANT, 1,0);//black
         } catch (Hive.IllegalMove illegalMove) {
-            System.out.println(illegalMove);
+            illegalMove.printStackTrace();
+        }
+
+        try {
+            game.move(1, 0, 0, 1);
+        } catch (Hive.IllegalMove illegalMove) {
+            System.out.println((illegalMove.getMessage()));
             illegalState = true;
         }
 
-        assertFalse(illegalState);
+        assertTrue(illegalState);
     }
 
+    //5B
     @Test
     public void playerCanOnlyMoveWhenTheirQueenBeeIsOnBoard(){
         HiveGame game = new HiveGame();
         boolean illegalState = false;
 
         try {
-            game.play(Hive.Tile.GRASSHOPPER, 0, 0);
+            game.play(Hive.Tile.SOLDIER_ANT, 0, 0);
             game.play(Hive.Tile.GRASSHOPPER, -1, 0);
             game.move(0,0,0,-1);
         } catch (Hive.IllegalMove illegalMove) {
+            System.out.println((illegalMove.getMessage()));
             illegalState = true;
         }
 
         assertTrue(illegalState);
+    }
+
+    //5C
+    @Test(expected =  Hive.IllegalMove.class)  // < dit was nieuw voor mij, dus even testen
+    public void afterMovingStoneInContactWithAtleastOneStone() throws Hive.IllegalMove {
+        HiveGame game = new HiveGame();
+        boolean thrown = false;
+
+        game.play(Hive.Tile.QUEEN_BEE, 0, 0); //white
+        game.play(Hive.Tile.QUEEN_BEE, -1, 0);//black
+        game.play(Hive.Tile.SOLDIER_ANT, 1, 0);//white
+        game.play(Hive.Tile.SOLDIER_ANT, -2, 0);//black
+
+
+        game.move(1,0,2,0);
+    }
+
+    //5D
+    @Test(expected = Hive.IllegalMove.class)
+    public void noSeperateGroupsOnBoardAfterMoving() throws  Hive.IllegalMove {
+        HiveGame game = new HiveGame();
+        boolean thrown = false;
+
+        game.play(Hive.Tile.QUEEN_BEE, 0, 0); //white
+        game.play(Hive.Tile.QUEEN_BEE, -1, 0);//black
+        game.play(Hive.Tile.SOLDIER_ANT, 1, 0);//white
+        game.play(Hive.Tile.SOLDIER_ANT, -2, 0);//black
+
+
+        game.move(0,0,+ 1,-1);
     }
 }
