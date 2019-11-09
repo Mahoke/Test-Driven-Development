@@ -22,10 +22,14 @@ public class HiveGame implements Hive {
     private Board board;
 
     public HiveGame(){
+        this(new Board());
+    }
+
+    public HiveGame(Board state){
         this.blackParticipant = new Participant(Hive.Player.BLACK);
         this.whiteParticipant = new Participant(Hive.Player.WHITE);
         this.whiteIsMoving = true;
-        this.board = new Board();
+        this.board = state;
     }
 
 
@@ -80,7 +84,7 @@ public class HiveGame implements Hive {
 
         if (tile.getPlayer() != p.getColor()) throw new IllegalMove("Moving someone else's tile");
 
-        this.board.move(p, fromQ, fromR, toQ, toR);
+        this.board.doMove(fromQ, fromR, toQ, toR);
         this.whiteIsMoving = !this.whiteIsMoving;
     }
 

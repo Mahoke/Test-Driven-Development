@@ -23,7 +23,7 @@ public class Board {
     }
 
     public List<Hex> getNeighbours(Hex hex){
-            List<Hex> neighbours = new ArrayList<>();
+        List<Hex> neighbours = new ArrayList<>();
 
         for (int[] qr : directions){
             int q = hex.getQ() + qr[0];
@@ -33,14 +33,36 @@ public class Board {
         return neighbours;
     }
 
+
+
+    private boolean hasTilesInNeighbouringHex(int q, int r) {
+        Hex hex = new Hex(q, r);
+        List<Hex> neighboutList = getNeighbours(hex);
+
+        for(Hex neighbour : neighboutList){
+            if (hasTileAt(neighbour)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean hasTileAt(int q, int r){
+        return hasTileAt(new Hex(q,r));
+    }
+
+    private boolean hasTileAt(Hex hex){
+        if(!hexTileMap.containsKey(hex)) return false;
+
+        if(!this.hexTileMap.get(hex).isEmpty()) return true;
+
+        return false;
+    }
+
     public boolean isHexEmpty(int q, int r){
         Hex hex = new Hex(q,r);
         Stack<Tile> tileStack = this.hexTileMap.get(hex);
-        if (tileStack == null){
-            return true;
-        } else {
-            return tileStack.size() == 0;
-        }
+        return  (tileStack == null) || tileStack.size() == 0;
     }
 
     public void placeTile(Tile tile, int q, int r) {
@@ -52,9 +74,38 @@ public class Board {
         }
 
         tileStack.push(tile);
-
         this.hexTileMap.put(hex,tileStack);
     }
+
+    public void removeTile(Tile tile, int q, int r){
+        Hex hex = new Hex(q,r);
+        Stack<Tile> tileStack = this.hexTileMap.get(hex);
+        if(tileStack == null){
+            System.out.println("Tilel not at this location");
+            return;
+        }
+        Tile removed = tileStack.pop();
+        if (!removed.equals(tile)){
+            System.out.println("Tile not on top!!!");
+            placeTile(removed, q, r);
+            return;
+        }
+
+        if(tileStack.size() == 0){
+            this.hexTileMap.remove(hex);
+        }
+        return;
+    }
+
+    public Stack<Tile> getTilesAtLocation(int q, int r){
+        Hex hex = new Hex(q,r);
+        Stack<Tile> st = this.hexTileMap.get(hex);
+
+        if (st == null) return new Stack<>();
+
+        return st;
+    }
+
 
     public Tile getTile(int q, int r) {
         Hex hex = new Hex(q,r);
@@ -75,14 +126,21 @@ public class Board {
         this.tileCount++;
     }
 
-    public void move(Participant p, int fromQ, int fromR, int toQ, int toR) {
+    public void doMove(int fromQ, int fromR, int toQ, int toR) {
+        Tile toMove = getTile(fromQ, fromR);
+        removeTile(toMove, fromQ, fromR);
+        placeTile(toMove, toQ, toR);
+    }
 
+    public void undoMove(int fromQ, int fromR, int toQ, int toR){
+        doMove(toQ, toR, fromQ, fromR);
     }
 
     public boolean isQueenBeeSurrounded(Hive.Player p){
         Tile tempQueenBee = new Tile(p, Hive.Tile.QUEEN_BEE);
-        int foundQ =-99;
-        int foundR =-99;
+
+        int foundQ = Integer.MIN_VALUE;
+        int foundR = Integer.MIN_VALUE;
 
         for (Map.Entry<Hex, Stack<Tile>> pair : hexTileMap.entrySet()){
             int found = pair.getValue().search(tempQueenBee);
@@ -142,25 +200,6 @@ public class Board {
         }
 
         return true;
-    }
-
-
-    private boolean hasTilesInNeighbouringHex(int q, int r) {
-        Hex hex = new Hex(q, r);
-        List<Hex> neighboutList = getNeighbours(hex);
-
-        int neighbourcount = 0;
-
-        for(Hex h : neighboutList){
-            Stack<Tile> st = hexTileMap.get(h);
-            if (st != null){
-                if ( st.size() > 0 ) {
-                    neighbourcount++;
-                }
-            }
-        }
-
-        return neighbourcount > 0;
     }
 
     public void updateTileCount(Participant p) {
