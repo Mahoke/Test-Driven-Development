@@ -1,26 +1,31 @@
-package nl.hanze.hive;
+package nl.hanze.hive.tiles;
 
+import nl.hanze.hive.Board;
+import nl.hanze.hive.Hex;
+import nl.hanze.hive.Hive;
+
+import java.util.List;
 import java.util.Objects;
 
-public class Tile {
+public class InsectTile {
 
     Hive.Player player;
     Hive.Tile tile;
 
-    public Tile(Hive.Player player){
+    public InsectTile(Hive.Player player){
         this(player, Hive.Tile.QUEEN_BEE);
     }
 
-    public Tile(Hive.Tile tile){
+    public InsectTile(Hive.Tile tile){
         this(Hive.Player.BLACK, tile);
     }
 
-    public Tile(Hive.Player player, Hive.Tile tile){
+    public InsectTile(Hive.Player player, Hive.Tile tile){
         this.tile = tile;
         this.player = player;
     }
 
-    public Tile(Hive.Tile tile, Hive.Player player){
+    public InsectTile(Hive.Tile tile, Hive.Player player){
         this.tile = tile;
         this.player = player;
     }
@@ -45,7 +50,7 @@ public class Tile {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Tile tile1 = (Tile) o;
+        InsectTile tile1 = (InsectTile) o;
         return player == tile1.player &&
                 tile == tile1.tile;
     }
@@ -54,4 +59,5 @@ public class Tile {
     public int hashCode() {
         return Objects.hash(player, tile);
     }
+
 }

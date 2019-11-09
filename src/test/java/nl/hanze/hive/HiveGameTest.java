@@ -1,5 +1,10 @@
 package nl.hanze.hive;
+import nl.hanze.hive.tiles.*;
 import org.junit.Test;
+
+import java.util.HashMap;
+import java.util.Stack;
+
 import static org.junit.Assert.*;
 
 public class HiveGameTest {
@@ -55,11 +60,11 @@ public class HiveGameTest {
     @Test
     public void whenWhiteQueenBeeSurroundedBlackWinsThenTrue(){
         Board board = new Board();
-        board.placeTile(new Tile(Hive.Player.WHITE, Hive.Tile.QUEEN_BEE), 0,0);
+        board.placeTile(new QueenBeeTile(Hive.Player.WHITE), 0,0);
 
         int[][] directions = {{0,-1},{0,1},{1,0},{1,-1},{-1,0},{-1,1}};
         for(int[] dir : directions){
-            board.placeTile(new Tile(Hive.Player.BLACK, Hive.Tile.GRASSHOPPER), dir[0], dir[1]);
+            board.placeTile(new GrasshopperTile(Hive.Player.BLACK), dir[0], dir[1]);
         }
 
 
@@ -77,13 +82,13 @@ public class HiveGameTest {
         int QBWr = 0;
         int QBBq = 0;
         int QBBr = -3;
-        board.placeTile(new Tile(Hive.Player.WHITE, Hive.Tile.QUEEN_BEE), QBWq,QBWr);
-        board.placeTile(new Tile(Hive.Player.BLACK, Hive.Tile.QUEEN_BEE), QBBq,QBBr);
+        board.placeTile(new QueenBeeTile(Hive.Player.WHITE), QBWq,QBWr);
+        board.placeTile(new QueenBeeTile(Hive.Player.BLACK), QBBq,QBBr);
 
         int[][] directions = {{0,-1},{0,1},{1,0},{1,-1},{-1,0},{-1,1}};
         for (int[] dir : directions){
-            board.placeTile(new Tile(Hive.Player.BLACK, Hive.Tile.GRASSHOPPER), QBWq + dir[0], QBWr + dir[1]);
-            board.placeTile(new Tile(Hive.Player.BLACK, Hive.Tile.GRASSHOPPER), QBBq + dir[0], QBBr + dir[1]);
+            board.placeTile(new GrasshopperTile(Hive.Player.BLACK), QBWq + dir[0], QBWr + dir[1]);
+            board.placeTile(new GrasshopperTile(Hive.Player.BLACK), QBBq + dir[0], QBBr + dir[1]);
         }
 
         assertTrue(game.isDraw());
@@ -109,8 +114,8 @@ public class HiveGameTest {
     public void whenStonesOnBoardPlayStoneAtHexWithNoNeighboursThenFalse(){
         HiveGame game = new HiveGame();
 
-        Tile t1 = new Tile(Hive.Player.BLACK, Hive.Tile.QUEEN_BEE);
-        Tile t2 = new Tile(Hive.Player.WHITE, Hive.Tile.QUEEN_BEE);
+        InsectTile t1 = new InsectTile(Hive.Player.BLACK, Hive.Tile.QUEEN_BEE);
+        InsectTile t2 = new InsectTile(Hive.Player.WHITE, Hive.Tile.QUEEN_BEE);
 
         boolean playableState = true;
 
@@ -134,8 +139,8 @@ public class HiveGameTest {
     public void whenStonesOfBothOnBoardPlayStoneNextToOpponentThenFalse(){
         HiveGame game = new HiveGame();
 
-        Tile t1 = new Tile(Hive.Player.BLACK, Hive.Tile.QUEEN_BEE);
-        Tile t2 = new Tile(Hive.Player.WHITE, Hive.Tile.QUEEN_BEE);
+        InsectTile t1 = new InsectTile(Hive.Player.BLACK, Hive.Tile.QUEEN_BEE);
+        InsectTile t2 = new InsectTile(Hive.Player.WHITE, Hive.Tile.QUEEN_BEE);
 
         boolean playableState = true;
 
@@ -253,5 +258,86 @@ public class HiveGameTest {
 
 
         game.move(0,0,+ 1,-1);
+    }
+
+    //12 Passen
+    @Test
+    public void tryPassButNotValidThenFalse(){
+        HiveGame game = new HiveGame();
+
+        try {
+            game.play(Hive.Tile.QUEEN_BEE, 0, 0);
+            game.play(Hive.Tile.QUEEN_BEE, 0, 1);
+            game.play(Hive.Tile.SOLDIER_ANT, 0, -1);
+        } catch (Hive.IllegalMove illegalMove) {
+            illegalMove.printStackTrace();
+        }
+
+        boolean canPass = true;
+        try {
+            game.pass();
+        } catch (Hive.IllegalMove illegalMove) {
+            canPass = false;
+        }
+        assertFalse(canPass);
+    }
+
+    @Test //12a
+    public void playerTriesToPassWhenNothingCanBePlayedButMoveIsPossibleThenFalse(){
+        Board board = new Board();
+        HiveGame game = new HiveGame(board);
+
+        try {
+            game.play(Hive.Tile.QUEEN_BEE, 0, 0);
+            game.play(Hive.Tile.BEETLE, 1,-1);
+            game.play(Hive.Tile.BEETLE, -1, 0);
+        } catch (Hive.IllegalMove illegalMove) {
+            //illegalMove.printStackTrace();
+        }
+
+        board.placeTile(new GrasshopperTile(Hive.Player.WHITE),0, -1);
+        board.placeTile(new BeetleTile(Hive.Player.WHITE),2, -2);
+        board.placeTile(new GrasshopperTile(Hive.Player.WHITE),1,0);
+        board.placeTile(new GrasshopperTile(Hive.Player.WHITE),2,-1);
+
+        Participant p = game.getBlackParticipant();
+        p.removeTileFromAvailableTiles(Hive.Tile.QUEEN_BEE);
+
+        boolean canPass = true;
+        try {
+            game.pass();
+        } catch (Hive.IllegalMove illegalMove) {
+            canPass = false;
+        }
+
+        assertFalse(canPass);
+    }
+
+    @Test //12
+    public void playerPassNoMovesThenTrue(){
+        Board board = new Board();
+        HiveGame game = new HiveGame(board);
+
+        try {
+            game.play(Hive.Tile.QUEEN_BEE, 0, 0);
+            game.play(Hive.Tile.QUEEN_BEE, 0,-1);
+            game.play(Hive.Tile.BEETLE, -1,1);
+        } catch (Hive.IllegalMove illegalMove) {
+            illegalMove.printStackTrace();
+        }
+        board.doMove(-1,1, -1,0);
+        board.placeTile(new BeetleTile(Hive.Player.WHITE), 1, -1);
+        board.placeTile(new SoldierAntTile(Hive.Player.WHITE), -1, -1);
+        board.placeTile(new SoldierAntTile(Hive.Player.WHITE), 1, -2);
+
+        boolean canPass = true;
+
+        try {
+            game.pass(); //black player past
+        } catch (Hive.IllegalMove illegalMove) {
+            canPass = false;
+        }
+
+        assertTrue(canPass);
     }
 }

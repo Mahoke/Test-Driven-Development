@@ -1,4 +1,5 @@
 package nl.hanze.hive;
+import nl.hanze.hive.tiles.InsectTile;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -12,7 +13,7 @@ public class BoardTest {
     @Test
     public void whenNewGameNoTilesOnBoardThenTrue(){
         Board b = new Board();
-        int tileCount = b.getBoardTiles().size();
+        int tileCount = b.getHexTileMap().size();
         assertEquals(0, tileCount);
     }
 
@@ -41,8 +42,8 @@ public class BoardTest {
     public void whenMultipleTilesPlacedOnHexLastInFirstOutThenTrue(){
         Board board = new Board();
 
-        Tile ta = new Tile(Hive.Player.BLACK, Hive.Tile.SPIDER);
-        Tile tb = new Tile(Hive.Player.WHITE, Hive.Tile.BEETLE);
+        InsectTile ta = new InsectTile(Hive.Player.BLACK, Hive.Tile.SPIDER);
+        InsectTile tb = new InsectTile(Hive.Player.WHITE, Hive.Tile.BEETLE);
 
         board.placeTile(ta, 0, 0);
         board.placeTile(tb, 0, 0);

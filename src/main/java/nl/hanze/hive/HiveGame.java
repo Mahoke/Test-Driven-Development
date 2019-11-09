@@ -1,5 +1,9 @@
 package nl.hanze.hive;
-import nl.hanze.hive.Tile;
+
+import nl.hanze.hive.tiles.InsectTile;
+import nl.hanze.hive.tiles.QueenBeeTile;
+import nl.hanze.hive.tiles.iMovable;
+
 public class HiveGame implements Hive {
 
     final static Hive.Tile[] startTileset = {
@@ -33,10 +37,19 @@ public class HiveGame implements Hive {
     }
 
 
+    public Participant getBlackParticipant() {
+        return blackParticipant;
+    }
+
+    public Participant getWhiteParticipant() {
+        return whiteParticipant;
+    }
+
+
     /**
      * Play a new tile.
      *
-     * @param tile Tile to play
+     * @param tile InsectTile to play
      * @param q    Q coordinate of hexagon to play to
      * @param r    R coordinate of hexagon to play to
      * @throws IllegalMove If the tile could not be played
@@ -45,7 +58,7 @@ public class HiveGame implements Hive {
     public void play(Tile tile, int q, int r) throws IllegalMove {
         Participant p = (this.whiteIsMoving) ? whiteParticipant : blackParticipant;
 
-        if(this.board.getTileCount(p.getColor()) == 3 && tile != Tile.QUEEN_BEE && p.getAvailableTiles().contains(new nl.hanze.hive.Tile(p.getColor(), Tile.QUEEN_BEE) ) ){
+        if(this.board.getTileCount(p.getColor()) == 3 && tile != Tile.QUEEN_BEE && p.getAvailableTiles().contains(new QueenBeeTile(p.getColor()) ) ){
             throw new IllegalMove();
         }
 
@@ -76,18 +89,24 @@ public class HiveGame implements Hive {
         Participant p = (this.whiteIsMoving) ? whiteParticipant : blackParticipant;
         checkLegalMove(fromQ, fromR, toQ, toR, p);
 
+        iMovable t = (iMovable) this.board.getTile(fromQ, fromR);
+        boolean isValid = t.isValidMove(this.board, fromQ, fromR, toQ, toR);
 
-        this.board.doMove(fromQ, fromR, toQ, toR);
-        this.whiteIsMoving = !this.whiteIsMoving;
+        if (isValid) {
+            this.board.doMove(fromQ, fromR, toQ, toR);
+            this.whiteIsMoving = !this.whiteIsMoving;
+        } else {
+            throw new Hive.IllegalMove("This move is invalid");
+        }
     }
 
     private void checkLegalMove(int fromQ, int fromR, int toQ, int toR, Participant p) throws IllegalMove {
 
         if (this.board.getTileCount(p.getColor()) == 0) throw new IllegalMove("No tiles on board");
 
-        if (!p.getTilesOnBoard().contains(new nl.hanze.hive.Tile(p.getColor(), Tile.QUEEN_BEE))) throw new IllegalMove("Can't move without the QueenBee on board.");
+        if (!p.getTilesOnBoard().contains(new QueenBeeTile(p.getColor()))) throw new IllegalMove("Can't move without the QueenBee on board.");
 
-        nl.hanze.hive.Tile tile = this.board.getTile(fromQ, fromR);
+        InsectTile tile = this.board.getTile(fromQ, fromR);
         if (tile == null) throw new IllegalMove("Can't move nothing!");
 
         if (tile.getPlayer() != p.getColor()) throw new IllegalMove("Moving someone else's tile");
@@ -105,8 +124,24 @@ public class HiveGame implements Hive {
      */
     @Override
     public void pass() throws IllegalMove {
+        Participant p = (whiteIsMoving) ? this.whiteParticipant : this.blackParticipant;
+        if(!canPlayerPass(p)){
+            throw new IllegalMove("Player cannot pass!");
+        }
         this.whiteIsMoving = !this.whiteIsMoving;
     }
+
+    private boolean canPlayerPass(Participant p){
+        if(board.getHexTileMap().size() != 1) { //met een enkele steen op het bord kan je altijd spelen
+            if (p.getAvailableTiles().isEmpty()) {
+                return board.canPlayerMove(p);
+            }
+
+            return (!p.getAvailableTiles().isEmpty() && !board.canTileBePlaced(p) && !board.canPlayerMove(p));
+        }
+        return false;
+    }
+
 
     /**
      * Check whether the given player is the winner.
@@ -117,8 +152,9 @@ public class HiveGame implements Hive {
     @Override
     public boolean isWinner(Player player) {
         if (this.isDraw()) return false;
-        Player opp = (player == Player.BLACK) ? Player.WHITE : Player.BLACK;
-        return board.isQueenBeeSurrounded(opp);
+        Player oppEnum = (player == Player.BLACK) ? Player.WHITE : Player.BLACK;
+
+        return board.isQueenBeeSurrounded(oppEnum) ;
     }
 
     /**

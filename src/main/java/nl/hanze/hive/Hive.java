@@ -6,7 +6,7 @@ package nl.hanze.hive;
 public interface Hive {
     /**
      * Play a new tile.
-     * @param tile Tile to play
+     * @param tile InsectTile to play
      * @param q Q coordinate of hexagon to play to
      * @param r R coordinate of hexagon to play to
      * @throws IllegalMove If the tile could not be played

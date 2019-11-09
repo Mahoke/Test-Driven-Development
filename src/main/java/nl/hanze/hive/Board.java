@@ -1,14 +1,16 @@
 package nl.hanze.hive;
 
 
+import nl.hanze.hive.tiles.*;
+
 import java.util.*;
 
 public class Board {
-    private Map<Hex, Stack<Tile>> hexTileMap;
+    private Map<Hex, Stack<InsectTile>> hexTileMap;
 
     final int[][] directions = {{0,-1},{0,1},{1,0},{1,-1},{-1,0},{-1,1}};
     private int tileCount = 0;
-    private List<Tile> boardTiles;
+    private List<InsectTile> boardTiles;
     private int tileCountWhite;
     private int tileCountBlack;
 
@@ -17,8 +19,32 @@ public class Board {
         this.hexTileMap = new HashMap<>();
     }
 
-    public List<Tile> getBoardTiles(){
-        return boardTiles;
+    @Override
+    public Board clone(){
+        Board copy = new Board();
+        Map<Hex, Stack<InsectTile>> newHexTileMap = new HashMap<>();
+
+        for (Map.Entry<Hex, Stack<InsectTile>> pair : hexTileMap.entrySet()){
+            Hex location = pair.getKey();
+            Stack<InsectTile> old = pair.getValue();
+            Stack<InsectTile> nw = (Stack<InsectTile>) old.clone();
+            newHexTileMap.put(location, nw);
+        }
+
+        copy.setHexTileMap(newHexTileMap);
+        return copy;
+    }
+
+    public Map<Hex, Stack<InsectTile>> getHexTileMap(){
+        return hexTileMap;
+    }
+
+    public void setHexTileMap(Map<Hex, Stack<InsectTile>> hexTileMap){
+        this.hexTileMap = hexTileMap;
+    }
+
+    public List<Hex> getNeighbouringHexLocations(int q, int r) {
+        return getNeighbouringHexLocations(new Hex(q,r));
     }
 
     public List<Hex> getNeighbouringHexLocations(Hex hex){
@@ -59,7 +85,7 @@ public class Board {
         List<Hex> neighbours = getNeighbouringHexLocations(hex);
         List<Hex> neighboursWithTiles = new ArrayList<>();
         for (Hex neighbour : neighbours){
-            Stack<Tile> tileStack = this.hexTileMap.get(neighbour);
+            Stack<InsectTile> tileStack = this.hexTileMap.get(neighbour);
             if (tileStack != null){
                 if(tileStack.size() > 0)
                     neighboursWithTiles.add(neighbour);
@@ -68,15 +94,32 @@ public class Board {
         return neighboursWithTiles;
     }
 
+    public List<Hex> getNeighboursWithoutTiles(Hex hex){
+        List<Hex> neighbours = getNeighbouringHexLocations(hex);
+        List<Hex> neighboursWithTiles = new ArrayList<>();
+        for (Hex neighbour : neighbours){
+            Stack<InsectTile> tileStack = this.hexTileMap.get(neighbour);
+            if(tileStack == null){
+                neighboursWithTiles.add(neighbour);
+
+            }else {
+                if(tileStack.size() == 0)
+                    neighboursWithTiles.add(neighbour);
+            }
+        }
+        return neighboursWithTiles;
+    }
+
+
     public boolean isHexEmpty(int q, int r){
         Hex hex = new Hex(q,r);
-        Stack<Tile> tileStack = this.hexTileMap.get(hex);
+        Stack<InsectTile> tileStack = this.hexTileMap.get(hex);
         return  (tileStack == null) || tileStack.size() == 0;
     }
 
-    public void placeTile(Tile tile, int q, int r) {
+    public void placeTile(InsectTile tile, int q, int r) {
         Hex hex = new Hex(q, r);
-        Stack<Tile> tileStack = this.hexTileMap.get(hex);
+        Stack<InsectTile> tileStack = this.hexTileMap.get(hex);
 
         if (tileStack == null) {
             tileStack = new Stack<>();
@@ -86,16 +129,16 @@ public class Board {
         this.hexTileMap.put(hex,tileStack);
     }
 
-    public void removeTile(Tile tile, int q, int r){
+    public void removeTile(InsectTile tile, int q, int r){
         Hex hex = new Hex(q,r);
-        Stack<Tile> tileStack = this.hexTileMap.get(hex);
+        Stack<InsectTile> tileStack = this.hexTileMap.get(hex);
         if(tileStack == null){
             System.out.println("Tilel not at this location");
             return;
         }
-        Tile removed = tileStack.pop();
+        InsectTile removed = tileStack.pop();
         if (!removed.equals(tile)){
-            System.out.println("Tile not on top!!!");
+            System.out.println("InsectTile not on top!!!");
             placeTile(removed, q, r);
             return;
         }
@@ -106,9 +149,13 @@ public class Board {
         return;
     }
 
-    public Stack<Tile> getTilesAtLocation(int q, int r){
-        Hex hex = new Hex(q,r);
-        Stack<Tile> st = this.hexTileMap.get(hex);
+    public Stack<InsectTile> getTilesAtHexLocation(int q, int r) {
+        return getTilesAtHexLocation(new Hex(q,r));
+
+    }
+
+    public Stack<InsectTile> getTilesAtHexLocation(Hex hex) {
+        Stack<InsectTile> st = this.hexTileMap.get(hex);
 
         if (st == null) return new Stack<>();
 
@@ -116,9 +163,9 @@ public class Board {
     }
 
 
-    public Tile getTile(int q, int r) {
+    public InsectTile getTile(int q, int r) {
         Hex hex = new Hex(q,r);
-        Stack<Tile> st = this.hexTileMap.get(hex);
+        Stack<InsectTile> st = this.hexTileMap.get(hex);
         if (st == null) return null;
 
         return st.peek();
@@ -126,17 +173,39 @@ public class Board {
 
     public void play(Hive.Tile tile, Hive.Player player, int q , int r){
         Hex hex = new Hex(q,r);
-        Stack<Tile> tStack = hexTileMap.get(hex);
+        Stack<InsectTile> tStack = hexTileMap.get(hex);
         if (tStack == null){
             tStack = new Stack<>();
             hexTileMap.put(hex, tStack);
         }
-        tStack.push(new Tile(player, tile));
+        tStack.push(createTileObjectFromEnum(tile, player));
         this.tileCount++;
     }
 
+    private InsectTile createTileObjectFromEnum(Hive.Tile t, Hive.Player color){
+        InsectTile o = null;
+        switch (t) {
+            case BEETLE:
+                o = new BeetleTile(color);
+                break;
+            case GRASSHOPPER:
+                o = new GrasshopperTile(color);
+                break;
+            case QUEEN_BEE:
+                o = new QueenBeeTile(color);
+                break;
+            case SOLDIER_ANT:
+                o = new SoldierAntTile(color);
+                break;
+            case SPIDER:
+                o = new SpiderTile(color);
+                break;
+        }
+        return o;
+    }
+
     public void doMove(int fromQ, int fromR, int toQ, int toR) {
-        Tile toMove = getTile(fromQ, fromR);
+        InsectTile toMove = getTile(fromQ, fromR);
         removeTile(toMove, fromQ, fromR);
         placeTile(toMove, toQ, toR);
     }
@@ -146,12 +215,12 @@ public class Board {
     }
 
     public boolean isQueenBeeSurrounded(Hive.Player p){
-        Tile tempQueenBee = new Tile(p, Hive.Tile.QUEEN_BEE);
+        InsectTile tempQueenBee = new QueenBeeTile(p);
 
         int foundQ = Integer.MIN_VALUE;
         int foundR = Integer.MIN_VALUE;
 
-        for (Map.Entry<Hex, Stack<Tile>> pair : hexTileMap.entrySet()){
+        for (Map.Entry<Hex, Stack<InsectTile>> pair : hexTileMap.entrySet()){
             int found = pair.getValue().search(tempQueenBee);
             if (found != -1){
                 foundQ = pair.getKey().getQ();
@@ -162,7 +231,7 @@ public class Board {
 
         int neighbourcount = 0;
         for (int[] qr : directions){
-            Stack<Tile> st = hexTileMap.get(new Hex(foundQ + qr[0], foundR + qr[1]));
+            Stack<InsectTile> st = hexTileMap.get(new Hex(foundQ + qr[0], foundR + qr[1]));
             if( st != null){
                 if (st.size() > 0) {
                     neighbourcount += 1;
@@ -189,14 +258,14 @@ public class Board {
 
         if (this.tileCountWhite > 0 && this.tileCountBlack > 0) {
             //There are tiles of both players on the board
-            //Tile has to be played next to it's own color tile
+            //InsectTile has to be played next to it's own color tile
             List<Hex> hexList = this.getNeighbouringHexLocations(new Hex(q, r));
 
             for (Hex h : hexList) {
-                Stack<Tile> st = hexTileMap.get(h);
+                Stack<InsectTile> st = hexTileMap.get(h);
                 if (st != null) {
                     if (st.size() > 0) {
-                        Tile t = st.peek();
+                        InsectTile t = st.peek();
                         Hive.Player neighbourColor = t.getPlayer();
 
                         if (neighbourColor != color) {
@@ -215,7 +284,7 @@ public class Board {
         Hex origin_hex = new Hex(q_origin, r_origin);
 
         //pop tile of the stack, it will get in the way when checking for neighbours
-        Tile origin_tile = hexTileMap.get(origin_hex).pop();
+        InsectTile origin_tile = hexTileMap.get(origin_hex).pop();
 
         boolean ret_val = hasLocationNeighbouringTiles(q_to,r_to);
 
@@ -231,7 +300,7 @@ public class Board {
         int neighbourcount = 0;
 
         for(Hex h : neighbourList){
-            Stack<Tile> st = hexTileMap.get(h);
+            Stack<InsectTile> st = hexTileMap.get(h);
             if (st != null){
                 if ( st.size() > 0 ) {
                     neighbourcount++;
@@ -258,9 +327,13 @@ public class Board {
         }
     }
 
-    public boolean legalBoardAfterMoving(int fromQ, int fromR, int toQ, int toR){
+    public boolean legalBoardAfterMoving(int fromQ, int fromR, int toQ, int toR) {
         Hex from = new Hex(fromQ, fromR);
         Hex to = new Hex(toQ, toR);
+        return legalBoardAfterMoving(from, to);
+    }
+
+    public boolean legalBoardAfterMoving(Hex from, Hex to){
         List<Hex> nFrom = getNeighboursWithTiles(from);
         List<Hex> nTo = getNeighboursWithTiles(to);
 
@@ -286,6 +359,112 @@ public class Board {
         for (Hex neighbour : getNeighbouringHexLocations(current)){
             if (!visited.contains(neighbour)){
                 if (legalBoardSearch(from, to, neighbour, visited)) return true;
+            }
+        }
+        return false;
+    }
+
+    //6
+    public boolean canSlideFromAToB(Hex from, Hex to) {
+        return this.canSlideFromAToB(from.getQ(), from.getR(), to.getQ(), to.getR());
+    }
+
+    public boolean canSlideFromAToB(int fromQ, int fromR, int toQ, int toR){
+        Hex a = new Hex(fromQ, fromR);
+        Hex b = new Hex(toQ, toR);
+
+        List<Hex> nbA = getNeighbouringHexLocations(a);
+        List<Hex> nbB = getNeighbouringHexLocations(b);
+
+        if (!nbA.contains(b)) return false; //b not connected to a
+
+        Hex n1 = null;
+        Hex n2 = null;
+        List<Hex> commonNeighbours = new ArrayList<>();
+        int amountNeighboursWithTiles = 0;
+        for (Hex h: nbA) {
+            if (nbB.contains(h)) {
+
+                if (n1 == null) {
+                    n1 = h;
+                }
+                else {
+                    n2 = h;
+                }
+
+                if (hasTileAt(h)) {
+                    amountNeighboursWithTiles++;
+                }
+            }
+        }
+
+    //    if(amountNeighboursWithTiles == 0) {
+     //       return false;// na slide verlaat de tile de hive, hierdoor geen buren.
+      //  }
+
+        if(amountNeighboursWithTiles == 1) {
+            return true; //Eén buur na slide, hierdoor slide altijd mogelijk (hoeft niet door vernauwing)
+        }
+
+
+        //6B
+        Stack<InsectTile> stackA = this.getTilesAtHexLocation(a);
+        Stack<InsectTile> stackB = this.getTilesAtHexLocation(b);
+        Stack<InsectTile> stackN1 = this.getTilesAtHexLocation(n1);
+        Stack<InsectTile> stackN2 = this.getTilesAtHexLocation(n2);
+
+        int min = Math.min(stackN1.size(), stackN2.size());
+        int max = Math.max(stackA.size() - 1, stackB.size());
+
+        return min <= max;
+    }
+
+    public boolean canPlayerMove(Participant p) {
+        List<Hex> positions = new ArrayList<>(); //Alle locaties waar de huidige speler boven ligt.
+
+        for (Map.Entry<Hex, Stack<InsectTile>> pair : hexTileMap.entrySet()) {
+            if(pair.getValue().peek().getPlayer() == p.getColor()){
+                positions.add(pair.getKey());
+            }
+        }
+
+        if(positions.isEmpty()){
+            return false;
+        }
+
+        for(Hex position: positions) {
+            for (Map.Entry<Hex, Stack<InsectTile>> pair : hexTileMap.entrySet()) {
+                List<Hex> neighbours = getNeighbouringHexLocations(pair.getKey());
+                for(Hex neighbour: neighbours){
+                    iMovable tileAtLocation = (iMovable) getTile(position.getQ(), position.getR());
+
+                    boolean canMove = false;
+                    try {
+                        canMove = tileAtLocation.isValidMove(this, position.getQ(), position.getR(), neighbour.getQ(),neighbour.getR());
+                    } catch (Hive.IllegalMove illegalMove) {
+                        canMove = false;
+                    }
+
+                    if(canMove){
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    public boolean canTileBePlaced(Participant p) {
+        InsectTile tile = p.getAvailableTiles().get(0);
+
+        for (Map.Entry<Hex, Stack<InsectTile>> pair : hexTileMap.entrySet()){
+            if(pair.getValue().peek().getPlayer() == p.getColor()){
+                List<Hex> neighboursWoTiles = getNeighboursWithoutTiles(pair.getKey());
+                for(Hex neighbour: neighboursWoTiles){
+                    if(canPlayTile(p.getColor(), tile.getTile(), neighbour.getQ(),neighbour.getR())){
+                        return true;
+                    }
+                }
             }
         }
         return false;
