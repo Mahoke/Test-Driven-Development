@@ -2,7 +2,6 @@ package nl.hanze.hive;
 import org.junit.Test;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -25,7 +24,7 @@ public class BoardTest {
         int hr = h.getR();
 
         Board board = new Board();
-        List<Hex> returnedNeighbours = board.getNeighbours(h);
+        List<Hex> returnedNeighbours = board.getNeighbouringHexLocations(h);
         ArrayList<Hex> shouldBeNeighbours = new ArrayList<>();
         shouldBeNeighbours.add(new Hex(0,- 1));
         shouldBeNeighbours.add(new Hex(0,+ 1));

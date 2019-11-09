@@ -2,7 +2,6 @@ package nl.hanze.hive;
 
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class Board {
     private Map<Hex, Stack<Tile>> hexTileMap;
@@ -22,7 +21,7 @@ public class Board {
         return boardTiles;
     }
 
-    public List<Hex> getNeighbours(Hex hex){
+    public List<Hex> getNeighbouringHexLocations(Hex hex){
         List<Hex> neighbours = new ArrayList<>();
 
         for (int[] qr : directions){
@@ -33,13 +32,11 @@ public class Board {
         return neighbours;
     }
 
-
-
     private boolean hasTilesInNeighbouringHex(int q, int r) {
         Hex hex = new Hex(q, r);
-        List<Hex> neighboutList = getNeighbours(hex);
+        List<Hex> neighbourList = getNeighbouringHexLocations(hex);
 
-        for(Hex neighbour : neighboutList){
+        for(Hex neighbour : neighbourList){
             if (hasTileAt(neighbour)){
                 return true;
             }
@@ -57,6 +54,18 @@ public class Board {
         if(!this.hexTileMap.get(hex).isEmpty()) return true;
 
         return false;
+    }
+    public List<Hex> getNeighboursWithTiles(Hex hex){
+        List<Hex> neighbours = getNeighbouringHexLocations(hex);
+        List<Hex> neighboursWithTiles = new ArrayList<>();
+        for (Hex neighbour : neighbours){
+            Stack<Tile> tileStack = this.hexTileMap.get(neighbour);
+            if (tileStack != null){
+                if(tileStack.size() > 0)
+                    neighboursWithTiles.add(neighbour);
+            }
+        }
+        return neighboursWithTiles;
     }
 
     public boolean isHexEmpty(int q, int r){
@@ -172,7 +181,7 @@ public class Board {
             return true;
         }
 
-        boolean hasNeighbours = this.hasTilesInNeighbouringHex(q, r);
+        boolean hasNeighbours = this.hasLocationNeighbouringTiles(q, r);
 
         if (!hasNeighbours) {
             return false;
@@ -181,7 +190,7 @@ public class Board {
         if (this.tileCountWhite > 0 && this.tileCountBlack > 0) {
             //There are tiles of both players on the board
             //Tile has to be played next to it's own color tile
-            List<Hex> hexList = this.getNeighbours(new Hex(q, r));
+            List<Hex> hexList = this.getNeighbouringHexLocations(new Hex(q, r));
 
             for (Hex h : hexList) {
                 Stack<Tile> st = hexTileMap.get(h);
@@ -202,6 +211,37 @@ public class Board {
         return true;
     }
 
+    public boolean hasLocationNeighbouringTilesAfterMoving(int q_to, int r_to, int q_origin, int r_origin){
+        Hex origin_hex = new Hex(q_origin, r_origin);
+
+        //pop tile of the stack, it will get in the way when checking for neighbours
+        Tile origin_tile = hexTileMap.get(origin_hex).pop();
+
+        boolean ret_val = hasLocationNeighbouringTiles(q_to,r_to);
+
+        //first tile back on the origin stack, this method doesnt moves tiles, it only checks
+        hexTileMap.get(origin_hex).push(origin_tile);
+        return ret_val;
+    }
+
+    private boolean hasLocationNeighbouringTiles(int q, int r) {
+        Hex hex = new Hex(q, r);
+        List<Hex> neighbourList = getNeighbouringHexLocations(hex);
+
+        int neighbourcount = 0;
+
+        for(Hex h : neighbourList){
+            Stack<Tile> st = hexTileMap.get(h);
+            if (st != null){
+                if ( st.size() > 0 ) {
+                    neighbourcount++;
+                }
+            }
+        }
+
+        return neighbourcount > 0;
+    }
+
     public void updateTileCount(Participant p) {
         if (p.getColor() == Hive.Player.WHITE) {
             this.tileCountWhite += 1;
@@ -218,4 +258,43 @@ public class Board {
         }
     }
 
+    public boolean legalBoardAfterMoving(int fromQ, int fromR, int toQ, int toR){
+        Hex fromHex = new Hex(fromQ, fromR);
+        Hex toHex = new Hex(toQ, toR);
+
+
+
+        if (!hasLocationNeighbouringTilesAfterMoving(toQ, toR, fromQ, fromR)) return false;
+
+        //move the tile
+        Tile t = hexTileMap.get(fromHex).pop();
+        placeTile(t,toQ,toR);
+
+        List<Hex> searched = legalBoardSearch(toHex, new ArrayList<>());
+
+        return (searched.size() == hexTileMap.size());
+
+    }
+
+    private boolean legalBoardSearch(Hex from, Hex to, Hex current, List<Hex> visited){
+        visited.add(current);
+
+        if (current.equals(to)){
+            return true;
+        }
+
+        if (!board.containsKey(currentLocation)) return false; // geen tile op deze locatie
+
+        if (currentLocation.getQ() == locationToMove.getQ() && currentLocation.getR() == locationToMove.getR()) return false; // mag niet via de tile die verplaatst wordt
+
+
+        for (HiveLocation n: getNeighbourLocations(currentLocation.getQ(), currentLocation.getR())){
+            System.out.println("n: " + n.getQ() + "," + n.getR());
+            if (!visited.contains(n)){
+                System.out.println("b: " + n.getQ() + "," + n.getR()) ;
+                if (areCellsLinked(locationToMove, toLocation, n, visited)) return true;
+            }
+        }
+        return false;
+    }
 }

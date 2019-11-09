@@ -104,6 +104,7 @@ public class HiveGameTest {
         assertFalse(playableState);
     }
 
+    //4C
     @Test
     public void whenStonesOnBoardPlayStoneAtHexWithNoNeighboursThenFalse(){
         HiveGame game = new HiveGame();
@@ -128,6 +129,7 @@ public class HiveGameTest {
         assertFalse(playableState);
     }
 
+    //4D
     @Test
     public void whenStonesOfBothOnBoardPlayStoneNextToOpponentThenFalse(){
         HiveGame game = new HiveGame();
@@ -153,6 +155,8 @@ public class HiveGameTest {
         assertFalse(playableState);
     }
 
+
+    //4E
     @Test
     public void whenPlayerPlayedThreeTilesHasToPlayQueenThenTrue() {
         HiveGame game = new HiveGame();
@@ -180,50 +184,74 @@ public class HiveGameTest {
         assertTrue(playableState);
     }
 
-    @Test
-    public void playerCanOnlyMoveTilesOnBoard(){
-        HiveGame game = new HiveGame();
-        boolean illegalState = false;
-
-        try {
-            game.move(0, 0, -1, 0);
-        } catch (Hive.IllegalMove illegalMove) {
-            illegalState = true;
-        }
-
-        assertTrue(illegalState);
-    }
-
+    //5A
     @Test
     public void playerCanOnlyMoveTheirOwnTilesOnBoard(){
         HiveGame game = new HiveGame();
         boolean illegalState = false;
 
         try {
-            game.play(Hive.Tile.QUEEN_BEE, 0,0);
-            game.play(Hive.Tile.QUEEN_BEE, -1, 0);
-            game.move(0, 0, 0, -1);
+            game.play(Hive.Tile.QUEEN_BEE, 0,0);//white
+            game.play(Hive.Tile.SOLDIER_ANT, 1,0);//black
         } catch (Hive.IllegalMove illegalMove) {
-            System.out.println(illegalMove);
+            illegalMove.printStackTrace();
+        }
+
+        try {
+            game.move(1, 0, 0, 1);
+        } catch (Hive.IllegalMove illegalMove) {
+            System.out.println((illegalMove.getMessage()));
             illegalState = true;
         }
 
-        assertFalse(illegalState);
+        assertTrue(illegalState);
     }
 
+    //5B
     @Test
     public void playerCanOnlyMoveWhenTheirQueenBeeIsOnBoard(){
         HiveGame game = new HiveGame();
         boolean illegalState = false;
 
         try {
-            game.play(Hive.Tile.GRASSHOPPER, 0, 0);
+            game.play(Hive.Tile.SOLDIER_ANT, 0, 0);
             game.play(Hive.Tile.GRASSHOPPER, -1, 0);
             game.move(0,0,0,-1);
         } catch (Hive.IllegalMove illegalMove) {
+            System.out.println((illegalMove.getMessage()));
             illegalState = true;
         }
 
         assertTrue(illegalState);
+    }
+
+    //5C
+    @Test(expected =  Hive.IllegalMove.class)  // < dit was nieuw voor mij, dus even testen
+    public void afterMovingStoneInContactWithAtleastOneStone() throws Hive.IllegalMove {
+        HiveGame game = new HiveGame();
+        boolean thrown = false;
+
+        game.play(Hive.Tile.QUEEN_BEE, 0, 0); //white
+        game.play(Hive.Tile.QUEEN_BEE, -1, 0);//black
+        game.play(Hive.Tile.SOLDIER_ANT, 1, 0);//white
+        game.play(Hive.Tile.SOLDIER_ANT, -2, 0);//black
+
+
+        game.move(1,0,2,0);
+    }
+
+    //5D
+    @Test(expected = Hive.IllegalMove.class)
+    public void noSeperateGroupsOnBoardAfterMoving() throws  Hive.IllegalMove {
+        HiveGame game = new HiveGame();
+        boolean thrown = false;
+
+        game.play(Hive.Tile.QUEEN_BEE, 0, 0); //white
+        game.play(Hive.Tile.QUEEN_BEE, -1, 0);//black
+        game.play(Hive.Tile.SOLDIER_ANT, 1, 0);//white
+        game.play(Hive.Tile.SOLDIER_ANT, -2, 0);//black
+
+
+        game.move(0,0,+ 1,-1);
     }
 }
