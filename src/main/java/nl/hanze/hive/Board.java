@@ -259,21 +259,17 @@ public class Board {
     }
 
     public boolean legalBoardAfterMoving(int fromQ, int fromR, int toQ, int toR){
-        Hex fromHex = new Hex(fromQ, fromR);
-        Hex toHex = new Hex(toQ, toR);
+        Hex from = new Hex(fromQ, fromR);
+        Hex to = new Hex(toQ, toR);
+        List<Hex> nFrom = getNeighboursWithTiles(from);
+        List<Hex> nTo = getNeighboursWithTiles(to);
 
-
-
-        if (!hasLocationNeighbouringTilesAfterMoving(toQ, toR, fromQ, fromR)) return false;
-
-        //move the tile
-        Tile t = hexTileMap.get(fromHex).pop();
-        placeTile(t,toQ,toR);
-
-        List<Hex> searched = legalBoardSearch(toHex, new ArrayList<>());
-
-        return (searched.size() == hexTileMap.size());
-
+        for(Hex neighbour: nFrom){
+            if(to.getQ() != neighbour.getQ() || to.getR() != neighbour.getR()){
+                if(!legalBoardSearch(from,to,neighbour, new ArrayList<>())) return false;
+            }
+        }
+        return true;
     }
 
     private boolean legalBoardSearch(Hex from, Hex to, Hex current, List<Hex> visited){
@@ -283,16 +279,13 @@ public class Board {
             return true;
         }
 
-        if (!board.containsKey(currentLocation)) return false; // geen tile op deze locatie
+        if (!hexTileMap.containsKey(current)) return false;
 
-        if (currentLocation.getQ() == locationToMove.getQ() && currentLocation.getR() == locationToMove.getR()) return false; // mag niet via de tile die verplaatst wordt
+        if(current.equals(from)) return false;
 
-
-        for (HiveLocation n: getNeighbourLocations(currentLocation.getQ(), currentLocation.getR())){
-            System.out.println("n: " + n.getQ() + "," + n.getR());
-            if (!visited.contains(n)){
-                System.out.println("b: " + n.getQ() + "," + n.getR()) ;
-                if (areCellsLinked(locationToMove, toLocation, n, visited)) return true;
+        for (Hex neighbour : getNeighbouringHexLocations(current)){
+            if (!visited.contains(neighbour)){
+                if (legalBoardSearch(from, to, neighbour, visited)) return true;
             }
         }
         return false;
