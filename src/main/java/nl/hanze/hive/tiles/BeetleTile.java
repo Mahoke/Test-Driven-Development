@@ -17,18 +17,14 @@ public class BeetleTile extends InsectTile implements iMovable {
     @Override
     public boolean isValidMove(Board board, int fromQ, int fromR, int toQ, int toR) {
         Hex from = new Hex(fromQ, fromR);
-        List<Hex> validMoves = new ArrayList<>();
 
         List<Hex> locations = board.getNeighbouringHexLocations(from);
 
         for (Hex to : locations){
-            boolean x =board.canSlideFromAToB(from, to);
-            boolean y =board.legalBoardAfterMoving(from, to);
-            if( x && y ){
-                if(to.equals(new Hex(toQ, toR))){
+            if(to.equals(new Hex(toQ, toR))){
+                if(board.canSlideFromAToB(from, to) && board.legalBoardAfterMoving(from, to)){
                     return true;
                 }
-                validMoves.add(to);
             }
         }
 
